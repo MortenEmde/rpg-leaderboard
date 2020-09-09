@@ -3,8 +3,21 @@ require('dotenv').config();
  
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 const routes = require('./routes/main');
- 
+const secureRoutes = require('./routes/secure');
+
+// setup mongo connection
+const uri = process.env.MONGO_CONNECTION_URL;
+mongoose.connect(uri, { useNewUrlParser : true, useCreateIndex: true, useUnifiedTopology: true });
+mongoose.connection.on('error', (error) => {
+  console.log(error);
+  process.exit(1);
+});
+mongoose.connection.on('connected', function () {
+  console.log('connected to mongo');
+});
+
 // create an instance of an express app
 const app = express();
  
@@ -14,6 +27,7 @@ app.use(bodyParser.json()); // parse application/json
  
 // main routes
 app.use('/', routes);
+app.use('/', secureRoutes);
  
 // catch all other routes
 app.use((req, res, next) => {
